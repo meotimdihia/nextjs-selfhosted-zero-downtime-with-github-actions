@@ -6,7 +6,7 @@ While big corporations or large companies can hire a team to deploy Next.js usin
 
 ⸻
 
-1. Use PM2
+# 1. Use PM2
 
 You can use PM2 with Capistrano-like deployments to handle this problem. However, I haven’t tested it yet.
 
@@ -14,7 +14,7 @@ You can use PM2 with Capistrano-like deployments to handle this problem. However
 
 ⸻
 
-2. Use systemd
+# 2. Use systemd
 
 This method is very simple, but troubleshooting issues may be difficult if you lack experience.
 
