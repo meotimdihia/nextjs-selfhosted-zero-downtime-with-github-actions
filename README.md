@@ -8,7 +8,7 @@ While big corporations or large companies can hire a team to deploy Next.js usin
 
 # 1. Use PM2
 
-You can use PM2 with Capistrano-like deployments to handle this problem. However, I haven’t tested it yet.
+I think you can use PM2 with Capistrano-like deployments to handle this problem. However, I haven’t tested it yet because PM2 monkey-patches logs, which is inappropriate in my case.
 
 🔗 Reference: [Capistrano-like deployments with PM2](https://pm2.keymetrics.io/docs/tutorials/capistrano-like-deployments)
 
