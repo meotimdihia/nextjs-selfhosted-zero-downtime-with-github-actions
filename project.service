@@ -1,0 +1,21 @@
+[Unit]
+Description=starting web Project
+# When systemd stops or restarts the app.service, the action is propagated to this unit
+
+# Start this unit after the app.service start
+
+# 2.30 StartLimitIntervalSec=0 
+
+[Service]
+# Environment=DEBUG=app,app:*
+Type=simple
+User=meotimdihia
+WorkingDirectory=/home/meotimdihia/sources/project
+ExecStart=/bin/bash -c 'pnpm start -p 3002'
+Restart=always 
+RuntimeMaxSec=3h
+RestartSec=5
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target

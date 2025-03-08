@@ -1,0 +1,96 @@
+name: Deploy Project to the Server
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+
+          - ip: HOST1
+            node: "22.x"
+
+          - ip: HOST2
+            node: "22.x"
+            
+    env:
+      NODE_ENV: production
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'pnpm'
+        
+      - name: Prepare .env file
+        run: echo "NEXT_PUBLIC_GIT_HASH=${{ github.head_ref }}.${{ github.sha }}" > .env.production
+
+      - name: Install Node modules
+        run: pnpm install
+
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+
+      - name: Build TypeScript for ${{ matrix.domain }}
+        run: pnpm build
+
+      - name: Deploy to Hetzner server
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i --delete -q"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.HOST1 }}
+          REMOTE_USER: "meotimdihia"
+          # The new deployment is named "project3"
+          TARGET: "/home/meotimdihia/sources/project3/"
+          EXCLUDE: ".env"
+
+      - name: Restart project service via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST1 }}
+          username: meotimdihia
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Copy the .env file from the old directory to the new one
+            cp -R /home/meotimdihia/sources/project/.env /home/meotimdihia/sources/project3/.env
+            
+            # Stop all instances
+            sudo systemctl stop project2 project3 project4
+
+            # Rename the old project directory as a backup
+            mv /home/meotimdihia/sources/project /home/meotimdihia/sources/project2
+
+            # Replace the old directory with the newly deployed version
+            cp -R /home/meotimdihia/sources/project3/. /home/meotimdihia/sources/project/
+
+            # Start all instances
+            sudo systemctl start project project2 project3 project4
+            
+            # Since you are using a self-hosted setup, you need to clear the CDN cache
+            curl -X POST "https://api.cloudflare.com/client/v4/zones/2d75d17485a663129e45e83a853aede1/purge_cache" \
+                -H "X-Auth-Email: youremail@gmail.com" \
+                -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_KEY }}" \
+                -H "Content-Type: application/json" \
+                --data '{"files":["https://yourdomain.io", "https://yourdomain.io/home?utm_source=web_app_manifest", "https://yourdomain.io/sw.js", "https://yourdomain.io/api/get-build-id"]}'
+            
+            # Now you can delete the old version.
+            # Why do we delete it as the last step? Because this directory is very large when using self-hosting.
+            # In my case, it can grow up to 200GB.
+            rm -rf /home/meotimdihia/sources/project2
