@@ -11,7 +11,8 @@ Description=starting web Project
 Type=simple
 User=meotimdihia
 WorkingDirectory=/home/meotimdihia/sources/project
-ExecStart=/bin/bash -c 'pnpm start -p 3002'
+Environment=PORT=%i
+ExecStart=/bin/bash -c 'pnpm start'
 Restart=always 
 RuntimeMaxSec=3h
 RestartSec=5
