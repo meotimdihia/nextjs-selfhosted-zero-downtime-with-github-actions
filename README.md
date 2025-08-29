@@ -32,7 +32,7 @@ You can find more details in the full workflow file: `.github/workflows/main.yml
 cp -R /home/meotimdihia/sources/project/.env /home/meotimdihia/sources/project3/.env
 
 # Stop all instances
-sudo systemctl stop project2 project3 project4
+sudo systemctl stop project@3001 project@3003 project@3005 project@3007
 
 # Rename the old project directory as a backup
 mv /home/meotimdihia/sources/project /home/meotimdihia/sources/project2
@@ -41,7 +41,7 @@ mv /home/meotimdihia/sources/project /home/meotimdihia/sources/project2
 cp -R /home/meotimdihia/sources/project3/. /home/meotimdihia/sources/project/
 
 # Start all instances
-sudo systemctl start project project2 project3 project4
+sudo systemctl restart project@3001 project@3003 project@3005 project@3007
 
 # Since you are using a self-hosted setup, you need to clear the CDN cache
 curl -X POST "https://api.cloudflare.com/client/v4/zones/2d75d17485a663129e45e83a853aede1/purge_cache" \
